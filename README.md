@@ -914,6 +914,77 @@ g++ -std=c++17 -pthread -O2 -I include -o dpi_engine \
 # Creates 4 LB threads × 4 FP threads = 16 processing threads
 ```
 
+---
+
+### Windows (cmd.exe / VS Code integrated terminal) — Copy-Paste Commands
+
+> The `\` line-continuation above only works in bash (Linux/macOS). In Windows `cmd.exe` it breaks the command. Use these single-line versions instead — MSYS2 UCRT64 g++ required (`pacman -S mingw-w64-ucrt-x86_64-toolchain`).
+
+**Simple Version:**
+```
+g++ -std=c++17 -O2 -I include -o dpi_simple.exe src/main_working.cpp src/pcap_reader.cpp src/packet_parser.cpp src/sni_extractor.cpp src/types.cpp
+```
+
+**Multi-threaded Version:**
+```
+g++ -std=c++17 -pthread -O2 -I include -o dpi_engine.exe src/dpi_mt.cpp src/pcap_reader.cpp src/packet_parser.cpp src/sni_extractor.cpp src/types.cpp
+```
+
+**Generate test data:**
+```
+python generate_test_pcap.py
+```
+
+**Basic usage:**
+```
+.\dpi_engine.exe test_dpi.pcap output.pcap
+```
+
+**With blocking:**
+```
+.\dpi_engine.exe test_dpi.pcap output.pcap --block-app YouTube --block-app TikTok --block-ip 192.168.1.50 --block-domain facebook
+```
+
+**Configure threads (multi-threaded only):**
+```
+dpi_engine.exe input.pcap output.pcap --lbs 4 --fps 4
+```
+
+**If you get `ld.exe: cannot find ...: No such file or directory`:** your MinGW/MSYS2 toolchain is incomplete or PATH is pointing to the wrong `g++`. Open the MSYS2 UCRT64 terminal and run:
+```
+pacman -Syu
+pacman -S mingw-w64-ucrt-x86_64-toolchain
+```
+Then confirm `C:\msys64\ucrt64\bin` is in your PATH and restart the terminal.
+
+---
+
+### Windows Demo Script (for interview / live demo)
+
+Copy-paste these one at a time, in order, into the terminal and press Enter after each.
+
+**Step 1 — Generate test data (only needed once):**
+```
+python generate_test_pcap.py
+```
+
+**Step 2 — Normal run (no blocking, baseline):**
+```
+dpi_engine.exe test_dpi.pcap output_normal.pcap
+```
+
+**Step 3 — Blocking run (YouTube, TikTok, an IP, and facebook domain blocked):**
+```
+dpi_engine.exe test_dpi.pcap output_blocked.pcap --block-app YouTube --block-app TikTok --block-ip 192.168.1.50 --block-domain facebook
+```
+The console will print lines like `[Rules] Blocked app: YouTube` — point these out live.
+
+**Step 4 — Show the difference (compare output file sizes):**
+```
+dir output_normal.pcap output_blocked.pcap
+```
+`output_blocked.pcap` will be smaller since the blocked traffic was dropped — this is the visible proof of blocking working.
+
 ### Creating Test Data
 
 ```bash
